@@ -1,0 +1,19 @@
+# This project is built and run entirely inside Linux containers. Force LF on
+# checkout so a clone made on Windows (where Git defaults to core.autocrlf=true)
+# still works: a CRLF-terminated build_all.sh breaks `bash` inside the image and
+# fails every `docker build`. See docker/README.md "Windows / Docker Desktop".
+* text=auto eol=lf
+
+# Belt-and-braces for the files that actually execute in the container.
+*.sh        text eol=lf
+*Dockerfile text eol=lf
+
+# Never normalise binary blobs.
+*.pth  binary
+*.pt   binary
+*.tar  binary
+*.npy  binary
+*.npz  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary

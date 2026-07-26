@@ -1,0 +1,39 @@
+# Python / Jupyter caches
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.jupyter/
+
+# Framework clones — AdaPT and TransAxx are cloned into the Docker image at build
+# time (see the Dockerfiles), never committed here.
+/adapt/
+/transaxx/
+
+# C pipeline scratch output. The canonical LUT headers under docker/luts/ ARE
+# committed; this only ignores the generator's local build dir.
+multipliers/luts/
+
+# Compiled C binaries
+multipliers/generate/generate
+multipliers/tests/test_compose
+multipliers/tests/test_primitives
+
+# Raw sweep output the analysis notebooks read is committed (runs.csv); the
+# derived exports + confusion matrices are regenerated, so they stay ignored.
+docker/results/*
+!docker/results/adapt/
+!docker/results/transaxx/
+docker/results/adapt/*
+docker/results/transaxx/*
+!docker/results/adapt/runs.csv
+!docker/results/transaxx/runs.csv
+
+# Datasets staged for the sweeps. Never commit the data (ImageNet's license
+# forbids redistribution; CIFAR auto-downloads), but keep the empty placeholders
+# so the bind-mount source dirs exist after a fresh clone — Windows Docker Desktop
+# errors on a missing bind source where Linux would just create it.
+docker/datasets/*
+!docker/datasets/.gitkeep
+!docker/datasets/imagenet_data/
+docker/datasets/imagenet_data/*
+!docker/datasets/imagenet_data/.gitkeep

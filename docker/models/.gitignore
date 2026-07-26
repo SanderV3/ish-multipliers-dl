@@ -1,0 +1,3 @@
+# weights are data, not code — copy them per machine
+*.pth
+*.pt

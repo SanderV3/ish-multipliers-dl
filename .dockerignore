@@ -1,0 +1,40 @@
+# Keep the build context small. Anything not listed here is sent to the
+# Docker daemon every time we build, which gets slow once .venv-*/ exist.
+
+# Nix dev venvs (gigabytes each)
+# Local python envs (wont exist on windows if you are just using the docker)
+.venv-adapt/
+.venv-transaxx/
+.direnv/
+
+# Local clones of the upstream frameworks — the Dockerfiles `git clone`
+# fresh copies, we don't want the gitignored local working trees inside
+# the image.
+/adapt/
+/transaxx/
+
+# Git metadata
+.git/
+.gitignore
+
+# Generated LUTs (regenerated inside the image)
+multipliers/luts/
+
+# Build artifacts
+multipliers/generate/generate
+multipliers/tests/test_compose
+multipliers/tests/test_primitives
+
+# Editor / Python noise
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.jupyter/
+
+# outputs
+result
+result-*
+files.zip
+
+# Docker compose's own bind-mount target
+docker/results/

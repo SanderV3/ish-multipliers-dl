@@ -1,0 +1,43 @@
+{
+  "_": "Written by 0_configure_sweeps.ipynb \u2014 edit THERE (this file is overwritten).",
+  "adapt": {
+    "datasets": [
+      "cifar10",
+      "cifar100"
+    ],
+    "models": [
+      "resnet20",
+      "resnet56",
+      "vgg11_bn"
+    ],
+    "retrain_epochs": 3,
+    "batch_size": 128,
+    "calib_batches": 2
+  },
+  "transaxx": {
+    "datasets": [
+      "cifar10",
+      "cifar100"
+    ],
+    "models": [
+      "resnet20",
+      "resnet56",
+      "vgg11_bn"
+    ],
+    "retrain_epochs": 3,
+    "batch_size": 128,
+    "calib_batches": 2
+  },
+  "transaxx_vit": {
+    "models": [
+      "vit_small_patch16_224",
+      "deit_small_patch16_224",
+      "vit_base_patch16_224"
+    ],
+    "dataset": "imagenet",
+    "retrain_epochs": 0,
+    "batch_size": 128,
+    "calib_batches": 8
+  },
+  "local_models": {}
+}

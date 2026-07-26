@@ -1,0 +1,17 @@
+# GPU override for hosts that expose the GPU via CDI (Container Device
+# Interface) instead of the legacy nvidia-container-runtime.
+#
+# Use by chaining it onto the base compose file:
+#   docker compose \
+#     -f docker/docker-compose.yml \
+#     -f docker/docker-compose.cdi.yml \
+#     up transaxx
+#
+# Windows + Docker Desktop should NOT use this. The default
+# compose files `deploy.resources` block is the right path there.
+
+services:
+  transaxx:
+    deploy: !reset null
+    devices:
+      - nvidia.com/gpu=all

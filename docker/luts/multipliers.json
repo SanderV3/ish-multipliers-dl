@@ -1,0 +1,13 @@
+{
+  "multipliers": [
+    "mul8s_1kva",
+    "mul8s_1kvb",
+    "mul8s_1l2h",
+    "mul8s_exact",
+    "mul8s_fpga_ish_1",
+    "mul8s_fpga_ish_2",
+    "mul8s_fpga_ish_3",
+    "mul8s_fpga_ish_4",
+    "mul8s_fpga_ish_5"
+  ]
+}

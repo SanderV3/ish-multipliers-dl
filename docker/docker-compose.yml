@@ -1,0 +1,86 @@
+# Reproducible pipeline for evaluating 8-bit approximate multipliers.
+# Three services: two heavy framework images RUN the sweeps, one slim image does
+# the analysis. Notebooks + results are BIND-MOUNTED (not baked into the images),
+# so you edit params in JupyterLab and re-run with NO rebuild. Only the pinned
+# environment lives in the image. (cf. Nüst et al. 2020, "Ten Simple Rules for
+# Writing Dockerfiles for Reproducible Data Science", rule 7: mount code/data at
+# run time; the container provides the environment, not the code or data.)
+#
+#   docker compose -f docker/docker-compose.yml up adapt      # CPU sweeps   -> http://localhost:8888
+#   docker compose -f docker/docker-compose.yml up transaxx   # GPU sweeps   -> http://localhost:8889
+#   docker compose -f docker/docker-compose.yml up analysis   # figures/NAME -> http://localhost:8890
+#
+# CDI hosts (NixOS, Podman, recent Docker/Fedora): the GPU comes over the Container
+# Device Interface, so chain the override for transaxx:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.cdi.yml up transaxx
+# (Windows / Docker Desktop: use the base file as-is, no override needed.)
+
+services:
+  # ---- CPU sweep (AdaPT) -------------------------------------------------
+  adapt:
+    build:
+      context: ..
+      dockerfile: docker/adapt.Dockerfile
+    image: rp-adapt
+    ports:
+      # loopback-bound on purpose: Jupyter runs token/password-less, so it must
+      # never hit a reachable interface. Drive it remotely via an SSH tunnel
+      # (see "Running on a remote GPU host" in README.md). Local use unaffected.
+      - "127.0.0.1:8888:8888"
+    volumes:
+      - ./notebooks:/work/notebooks   # live-editable, single source of truth
+      - ./results:/work/results       # all frameworks' results (this one writes adapt/)
+      - ./luts:/work/luts             # manifest + headers (0_build_multipliers writes here)
+      - ./models:/work/models         # local user-provided models (<name>.py + weights)
+      # CIFAR (and any custom dataset) lands here. Bind-mounted so the download
+      # persists across container rebuilds and so data can be pre-staged offline
+      # (torchvision sees the existing files and skips the download).
+      - ./datasets:/workspace/datasets
+      # the multiplier headers are the single source of truth, mounted OVER AdaPT's
+      # JIT kernel dir, so a multiplier built in notebook 0 is usable with no rebuild.
+      - ./luts/adapt:/workspace/adapt/adapt/cpu-kernels/axx_mults
+
+  # ---- GPU sweep (TransAxx) ----------------------------------------------
+  transaxx:
+    build:
+      context: ..
+      dockerfile: docker/transaxx.Dockerfile
+    image: rp-transaxx
+    shm_size: '8gb'                   # ImageNet DataLoader needs far more than Docker's 64MB /dev/shm
+    ports:
+      # loopback-bound (see adapt above), tunnel in for remote GPU runs.
+      - "127.0.0.1:8889:8889"
+    volumes:
+      - ./notebooks:/work/notebooks
+      - ./results:/work/results
+      - ./luts:/work/luts             # manifest + headers (single source of truth)
+      - ./models:/work/models         # local user-provided models (<name>.py + weights)
+      # mounted OVER TransAxx's JIT kernel dir, new multiplier usable with no rebuild.
+      - ./luts/transaxx:/workspace/ext_modules/include/nn/cuda/axx_mults
+      # ImageNet for the ViT sweep (val/ + train_tiny/). Writable so the notebook's
+      # "Prepare ImageNet-V2" cell can populate it.
+      - ./datasets/imagenet_data:/workspace/datasets/imagenet_data
+    # nvidia-container-toolkit on the host. On a CDI host (NixOS/Podman/etc.) chain
+    # docker-compose.cdi.yml, which resets this deploy block and uses a CDI device instead.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ---- Analysis (no framework, no GPU) -----------------------------------
+  analysis:
+    build:
+      context: ..
+      dockerfile: docker/analysis.Dockerfile
+    image: rp-analysis
+    ports:
+      # loopback-bound (see adapt above), tunnel in for remote runs.
+      - "127.0.0.1:8890:8890"
+    volumes:
+      - ./notebooks:/work/notebooks
+      - ./results:/work/results       # sees adapt/ AND transaxx/ at once
+      - ./luts:/work/luts             # 0_build_multipliers writes headers + manifest here
+      - ./models:/work/models         # so 0_configure_sweeps can validate local models

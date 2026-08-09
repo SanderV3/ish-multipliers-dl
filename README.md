@@ -2,8 +2,8 @@
 
 This repo evaluates five 8-bit approximate multipliers, ISH-1..ISH-5 (code name
 `FPGA_ISH_1`..`FPGA_ISH_5`), on CNN and ViT inference. It is the evaluation
-pipeline behind the paper *Scaling FPGA-Optimized, Power-Efficient Internal
-Self-Healing-Based Approximate Multipliers to Larger Deep Learning Workloads*
+pipeline behind the paper *Evaluating FPGA-Optimized Power-Efficient Internal
+Self-Healing-Based Approximate Multipliers in Larger Deep Learning Workloads*
 (Marki-Pleym, Rasheed, and Gillani, University of Twente, submitted to FIT 2026). A small C pipeline turns each multiplier design into a
 256×256 lookup-table (LUT) header, and two emulation frameworks then run DL
 inference that multiplies through those LUTs instead of an exact multiplier.
